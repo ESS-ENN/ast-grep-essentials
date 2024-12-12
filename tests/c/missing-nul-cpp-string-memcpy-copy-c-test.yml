@@ -1,0 +1,36 @@
+id: missing-nul-cpp-string-memcpy-copy-c
+valid:
+  - |
+    memcpy(to, from.c_str(), strlen(from.c_str()) + 1);
+  - |
+    memcpy(to, from.c_str(), from.size() + 1);
+invalid:
+  - |
+    char to[20];
+    memcpy(to, from.c_str(), strlen(from.c_str()));
+  - |
+    char to[20];
+    memcpy(to, from.c_str(), from.size());
+  - |
+    char to[20];
+    memcpy(to, from.c_str(), from.length());
+  - |
+    char to[20];
+    memcpy(to, from.c_str(), from.length());
+  - |
+    char dest1[10];
+    memcpy(dest1, from.c_str(), strlen(from.c_str()));
+  - |
+    char dest2[15];
+    memmove(dest2, from.c_str(), from.size());
+  - |
+    char dest3[10];
+    size_t length = strlen(from.c_str());
+    memcpy(dest3, from.c_str(), length);
+  - |
+    wchar_t wide_dest[20];
+    wmemcpy(wide_dest, wide_from.c_str(), wide_from.size());
+  - |
+    char dest4[10];
+    size_t len = from.length();
+    memmove(dest4, from.c_str(), len);

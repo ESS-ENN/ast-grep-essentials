@@ -1,0 +1,281 @@
+id: missing-nul-cpp-string-memcpy-copy-c
+language: c
+severity: warning
+message: >-
+  The number of bytes copied from `$STR` does not include the NUL
+  terminator. This can lead to an out-of-bounds read and information
+  disclosure. One extra byte should be added to the length to ensure that
+  the NUL terminator is copied.
+note: >-
+  [CWE-125]: Out-of-bounds Read
+  [REFERENCES]
+      - https://wiki.sei.cmu.edu/confluence/display/c/STR31-C.+Guarantee+that+storage+for+strings+has+sufficient+space+for+character+data+and+the+null+terminator
+utils:
+  match_identifier:
+    kind: identifier
+    regex: ^(memcpy|wmemcpy|memmove|wmemmove|std::memcpy|std::wmemcpy)$
+    inside:
+      stopBy: end
+      kind: call_expression
+      inside:
+        stopBy: end
+        kind: expression_statement
+        has:
+          stopBy: end
+          kind: argument_list
+          has:
+            stopBy: end
+            kind: identifier
+            pattern: $T
+          all:
+            - has:
+                stopBy: end
+                kind: call_expression
+                has:
+                  stopBy: end
+                  kind: field_expression
+                  all:
+                    - has:
+                        stopBy: end
+                        kind: identifier
+                        regex: "^from$"
+                    - has:
+                        stopBy: end
+                        kind: field_identifier
+                        regex: "^c_str$"
+            - has:
+                stopBy: neighbor
+                kind: call_expression
+                all:
+                  - has:
+                      stopBy: end
+                      kind: identifier
+                      regex: "^strlen$"
+                  - has:
+                      stopBy: end
+                      kind: argument_list
+                      has:
+                        stopBy: end
+                        kind: call_expression
+                        all:
+                          - has:
+                              stopBy: end
+                              kind: field_expression
+                              has:
+                                stopBy: end
+                                kind: identifier
+                                regex: "^from$"
+                          - has:
+                              stopBy: end
+                              kind: field_identifier
+                              regex: "^c_str$"
+        follows:
+          stopBy: end
+          kind: declaration
+          has:
+            stopBy: end
+            kind: array_declarator
+            all:
+              - has:
+                  stopBy: end
+                  kind: identifier
+                  pattern: $T
+              - has:
+                  stopBy: end
+                  kind: number_literal
+
+  match_identifier_from_size:
+    kind: identifier
+    regex: ^(memcpy|wmemcpy|memmove|wmemmove|std::memcpy|std::wmemcpy)$
+    inside:
+      stopBy: end
+      kind: call_expression
+      inside:
+        stopBy: end
+        kind: expression_statement
+        has:
+          stopBy: end
+          kind: argument_list
+          has:
+            stopBy: end
+            kind: identifier
+            pattern: $V
+          all:
+            - has:
+                stopBy: end
+                kind: call_expression
+                all:
+                  - has:
+                      stopBy: end
+                      kind: field_expression
+                      has:
+                        stopBy: end
+                        kind: identifier
+                  - has:
+                      stopBy: end
+                      kind: field_identifier
+                      regex: "^c_str$"
+            - has:
+                stopBy: end
+                kind: call_expression
+                all:
+                  - has:
+                      stopBy: end
+                      kind: field_expression
+                      all:
+                        - has:
+                            stopBy: end
+                            kind: identifier
+                        - has:
+                            stopBy: end
+                            kind: field_identifier
+                            regex: ^(size|length)$
+                not:
+                  precedes:
+                    stopBy: end
+                    kind: number_literal
+        follows:
+          stopBy: end
+          kind: declaration
+          has:
+            stopBy: end
+            kind: array_declarator
+            all:
+              - has:
+                  stopBy: end
+                  kind: identifier
+              - has:
+                  stopBy: neighbor
+                  kind: number_literal
+
+  match_identifier_len:
+    kind: identifier
+    regex: ^(memcpy|wmemcpy|memmove|wmemmove|std::memcpy|std::wmemcpy)$
+    inside:
+      stopBy: end
+      kind: call_expression
+      inside:
+        stopBy: end
+        kind: expression_statement
+        has:
+          stopBy: end
+          kind: argument_list
+          has:
+            stopBy: end
+            kind: identifier
+            pattern: $Z
+          all:
+            - has:
+                stopBy: end
+                kind: call_expression
+                all:
+                  - has:
+                      stopBy: end
+                      kind: field_expression
+                      all:
+                        - has:
+                            stopBy: end
+                            kind: identifier
+                            regex: "^from$"
+                        - has:
+                            stopBy: end
+                            kind: field_identifier
+                            regex: "^c_str$"
+                  - has:
+                      stopBy: end
+                      kind: argument_list
+            - has:
+                stopBy: end
+                kind: identifier
+                regex: ^(len|length)$
+                not:
+                  precedes:
+                    stopBy: end
+                    kind: number_literal
+        follows:
+          stopBy: end
+          kind: declaration
+          has:
+            stopBy: end
+            kind: array_declarator
+            all:
+              - has:
+                  stopBy: end
+                  kind: identifier
+                  pattern: $Z
+              - has:
+                  stopBy: end
+                  kind: number_literal
+  match_length_number:
+    kind: identifier
+    regex: ^(memcpy|wmemcpy|memmove|wmemmove|std::memcpy|std::wmemcpy)$
+    inside:
+      stopBy: end
+      kind: call_expression
+      inside:
+        stopBy: end
+        kind: expression_statement
+        has:
+          stopBy: end
+          kind: argument_list
+          has:
+            stopBy: end
+            kind: identifier
+            pattern: $X
+          all:
+            - has:
+                stopBy: end
+                kind: call_expression
+                all:
+                  - has:
+                      stopBy: end
+                      kind: field_expression
+                      all:
+                        - has:
+                            kind: identifier
+                            regex: "^from$"
+                        - has:
+                            kind: field_identifier
+                            regex: "^c_str$"
+                  - has:
+                      stopBy: end
+                      kind: argument_list
+            - has:
+                stopBy: end
+                kind: identifier
+                pattern: $Y
+        follows:
+          stopBy: end
+          kind: declaration
+          any:
+            - has:
+                stopBy: end
+                kind: array_declarator
+                all:
+                  - has:
+                      stopBy: end
+                      kind: identifier
+                      pattern: $X
+                  - has:
+                      stopBy: end
+                      kind: number_literal
+            - has:
+                kind: init_declarator
+                has:
+                  stopBy: end
+                  kind: identifier
+                  regex: $Y
+                all:
+                  - has:
+                      stopBy: end
+                      kind: call_expression
+                  - has:
+                      stopBy: end
+                      kind: argument_list
+
+rule:
+  any:
+    - matches: match_identifier
+    - matches: match_identifier_from_size
+    - matches: match_identifier_len
+    - matches: match_length_number
